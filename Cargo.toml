@@ -1,0 +1,9 @@
+[package]
+
+name = "discrete-log"
+version = "0.0.2"
+authors = ["vinzent <Vinzent.Steinberg@gmail.com>"]
+
+[dependencies]
+rust-gmp = "0.2"
+num = "0.1"
