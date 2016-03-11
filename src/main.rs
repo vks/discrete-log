@@ -136,12 +136,13 @@ fn powm(base: &BigInt, exp: &BigInt, modulus: &BigInt) -> BigInt {
 }
 
 trait Integer:
-    Sized + Eq + Ord
+    Sized + Eq + Ord + Clone
     + Add<Output=Self> + Sub<Output=Self> + Mul<Output=Self> + Div<Output=Self> + Rem<Output=Self> + Neg<Output=Self>
     + From<u64> + Hash
 {
     fn zero() -> Self;
     fn one() -> Self;
+    fn invert(&self, modulus: &Self) -> Option<Self>;
     fn powm(&self, exp: &Self, modulus: &Self) -> Self;
 }
 
@@ -152,6 +153,10 @@ impl Integer for Mpz {
 
     fn one() -> Mpz {
         Mpz::one()
+    }
+
+    fn invert(&self, modulus: &Mpz) -> Option<Mpz> {
+        self.invert(modulus)
     }
 
     fn powm(&self, exp: &Mpz, modulus: &Mpz) -> Mpz {
@@ -166,6 +171,10 @@ impl Integer for BigInt {
 
     fn one() -> BigInt {
         One::one()
+    }
+
+    fn invert(&self, modulus: &BigInt) -> Option<BigInt> {
+        inverse(self.clone(), modulus)
     }
 
     fn powm(&self, exp: &BigInt, modulus: &BigInt) -> BigInt {
@@ -194,31 +203,30 @@ fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
       for<'a> T: Rem<&'a T, Output=T>,
       for<'a> &'a T: Neg<Output=T>,
 {
-    let B: usize = num::pow(2, x_max_exp / 2);
+    let B: usize = 1 << (x_max_exp / 2);
     let b = T::from(B as u64);
 
     // Build table.
     let mut table: HashMap<T, usize> = HashMap::with_capacity(B);
+    let g_inv = g.invert(p).unwrap();
+    let mut lhs = h % p;
     for x1 in 0..B {
-        let x1_mpz = T::from(x1 as u64);
-        let lhs = h * g.powm(&(-x1_mpz), p);
-        let lhs = lhs % p;
-        table.insert(lhs, x1);
+        if x1 > 0 {
+            lhs = (lhs * &g_inv) % p;
+        }
+        table.insert(lhs.clone(), x1);
     }
 
     // Find collision.
+    let g_b = g.powm(&b, p);
+    let mut rhs = T::one();
     for x0 in 0..B {
-        let rhs = g.powm(&b, p);
-        let x0_mpz = T::from(x0 as u64);
-        let rhs = rhs.powm(&x0_mpz, p);
+        if x0 > 0 {
+            rhs = (rhs * &g_b) % p;
+        }
 
-        match table.get(&rhs) {
-            Some(lhs) => {
-                let x1 = *lhs;
-                let x = x0 * B + x1;
-                return x;
-            }
-            None => ()
+        if let Some(&x1) = table.get(&rhs) {
+            return x0 * B + x1;
         }
     }
     panic!("`x_max_exp` is too small");
@@ -261,15 +269,29 @@ fn test_discrete_log_bigint() {
 
 #[cfg(not(test))]
 fn main() {
-    /*
-    let p = Mpz::from_str_radix("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084171", 10).unwrap();
-    let g = Mpz::from_str_radix("11717829880366207009516117596335367088558084999998952205599979459063929499736583746670572176471460312928594829675428279466566527115212748467589894601965568", 10).unwrap();
-    let h = Mpz::from_str_radix("3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333", 10).unwrap();
-    */
-    let p = BigInt::from_str_radix("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084171", 10).unwrap();
-    let g = BigInt::from_str_radix("11717829880366207009516117596335367088558084999998952205599979459063929499736583746670572176471460312928594829675428279466566527115212748467589894601965568", 10).unwrap();
-    let h = BigInt::from_str_radix("3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333", 10).unwrap();
-    let x = discrete_log(&g, &h, &p, 40);
+    const P: &'static str = "13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084171";
+    const G: &'static str = "11717829880366207009516117596335367088558084999998952205599979459063929499736583746670572176471460312928594829675428279466566527115212748467589894601965568";
+    const H: &'static str = "3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333";
+
+    let arg = std::env::args().skip(1).next()
+        .unwrap_or("bigint".into());
+
+    let x = if arg == "mpz" {
+        let p = Mpz::from_str_radix(P, 10).unwrap();
+        let g = Mpz::from_str_radix(G, 10).unwrap();
+        let h = Mpz::from_str_radix(H, 10).unwrap();
+        discrete_log(&g, &h, &p, 40)
+
+    } else if arg == "bigint" {
+        let p = BigInt::from_str_radix(P, 10).unwrap();
+        let g = BigInt::from_str_radix(G, 10).unwrap();
+        let h = BigInt::from_str_radix(H, 10).unwrap();
+        discrete_log(&g, &h, &p, 40)
+
+    } else {
+        panic!("unknown argument!");
+    };
+
     assert_eq!(x, 375374217830);
     println!("{}", x);
 }
