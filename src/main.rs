@@ -10,7 +10,6 @@ use std::convert::From;
 use std::collections::HashMap;
 use gmp::mpz::Mpz;
 use num::{BigInt, Zero, One};
-use num::traits::Num;
 
 /// Find the standard representation of a (mod n).
 fn normalize<T: Integer>(a: T, n: &T) -> T
