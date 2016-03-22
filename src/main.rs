@@ -47,7 +47,7 @@ struct GcdResult<T> {
 }
 
 /// Calculate greatest common divisor and the corresponding coefficients.
-fn extended_gcd<T: Integer + Clone>(a: T, b: T) -> GcdResult<T>
+fn extended_gcd<T: Integer>(a: T, b: T) -> GcdResult<T>
     where
       for<'a, 'b> &'a T: Add<&'b T, Output=T>,
       for<'a> &'a T: Add<T, Output=T>,
@@ -73,10 +73,9 @@ fn extended_gcd<T: Integer + Clone>(a: T, b: T) -> GcdResult<T>
 
     while r != T::zero() {
         let quotient = &old_r / &r;
-        let mut tmp;
-        tmp = r.clone(); r = old_r - &quotient * r; old_r = tmp;
-        tmp = s.clone(); s = old_s - &quotient * s; old_s = tmp;
-        tmp = t.clone(); t = old_t - quotient * t; old_t = tmp;
+        old_r = old_r - &quotient * &r; std::mem::swap(&mut old_r, &mut r);
+        old_s = old_s - &quotient * &s; std::mem::swap(&mut old_s, &mut s);
+        old_t = old_t - quotient * &t; std::mem::swap(&mut old_t, &mut t);
     }
 
     let _quotients = (t, s); // == (a, b) / gcd
