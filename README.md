@@ -15,6 +15,8 @@ implementation in [`num`](https://crates.io/crates/num) with
 [GMP](https://gmplib.org/):
 
 ```
+► cargo build --release
+[...]
 ► perf stat -B cargo run --release bigint
      Running `target/release/discrete-log bigint`
 375374217830
