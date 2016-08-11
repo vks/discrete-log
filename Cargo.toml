@@ -1,9 +1,10 @@
 [package]
 
 name = "discrete-log"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["vinzent <Vinzent.Steinberg@gmail.com>"]
 
 [dependencies]
 rust-gmp = "0.2"
-num = "0.1"
+num-traits = "0.1.34"
+num-bigint = "0.1"
