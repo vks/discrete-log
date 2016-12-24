@@ -15,23 +15,7 @@ use num_traits::{Zero, One};
 
 /// Find the standard representation of a (mod n).
 fn normalize<T: Integer>(a: T, n: &T) -> T
-    where
-      for<'a, 'b> &'a T: Add<&'b T, Output=T>,
-      for<'a> &'a T: Add<T, Output=T>,
-      for<'a> T: Add<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Sub<&'b T, Output=T>,
-      for<'a> &'a T: Sub<T, Output=T>,
-      for<'a> T: Sub<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Mul<&'b T, Output=T>,
-      for<'a> &'a T: Mul<T, Output=T>,
-      for<'a> T: Mul<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Div<&'b T, Output=T>,
-      for<'a> &'a T: Div<T, Output=T>,
-      for<'a> T: Div<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Rem<&'b T, Output=T>,
-      for<'a> &'a T: Rem<T, Output=T>,
-      for<'a> T: Rem<&'a T, Output=T>,
-      for<'a> &'a T: Neg<Output=T>,
+    where for<'a> &'a T: IntegerOps<T>
 {
     let a = a % n;
     match a.cmp(&T::zero()) {
@@ -50,23 +34,7 @@ struct GcdResult<T> {
 
 /// Calculate greatest common divisor and the corresponding coefficients.
 fn extended_gcd<T: Integer>(a: T, b: T) -> GcdResult<T>
-    where
-      for<'a, 'b> &'a T: Add<&'b T, Output=T>,
-      for<'a> &'a T: Add<T, Output=T>,
-      for<'a> T: Add<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Sub<&'b T, Output=T>,
-      for<'a> &'a T: Sub<T, Output=T>,
-      for<'a> T: Sub<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Mul<&'b T, Output=T>,
-      for<'a> &'a T: Mul<T, Output=T>,
-      for<'a> T: Mul<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Div<&'b T, Output=T>,
-      for<'a> &'a T: Div<T, Output=T>,
-      for<'a> T: Div<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Rem<&'b T, Output=T>,
-      for<'a> &'a T: Rem<T, Output=T>,
-      for<'a> T: Rem<&'a T, Output=T>,
-      for<'a> &'a T: Neg<Output=T>,
+    where for<'a> &'a T: IntegerOps<T>
 {
     // Euclid's extended algorithm
     let (mut s, mut old_s) = (T::zero(), T::one());
@@ -87,23 +55,7 @@ fn extended_gcd<T: Integer>(a: T, b: T) -> GcdResult<T>
 
 /// Calculate the inverse of a (mod n).
 fn inverse<T: Integer + Clone>(a: T, n: &T) -> Option<T>
-    where
-      for<'a, 'b> &'a T: Add<&'b T, Output=T>,
-      for<'a> &'a T: Add<T, Output=T>,
-      for<'a> T: Add<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Sub<&'b T, Output=T>,
-      for<'a> &'a T: Sub<T, Output=T>,
-      for<'a> T: Sub<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Mul<&'b T, Output=T>,
-      for<'a> &'a T: Mul<T, Output=T>,
-      for<'a> T: Mul<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Div<&'b T, Output=T>,
-      for<'a> &'a T: Div<T, Output=T>,
-      for<'a> T: Div<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Rem<&'b T, Output=T>,
-      for<'a> &'a T: Rem<T, Output=T>,
-      for<'a> T: Rem<&'a T, Output=T>,
-      for<'a> &'a T: Neg<Output=T>,
+    where for<'a> &'a T: IntegerOps<T>
 {
     let GcdResult { gcd, c1: c, c2: _ } = extended_gcd(a, n.clone());
     if gcd == T::one() {
@@ -135,9 +87,33 @@ fn powm(base: &BigInt, exp: &BigInt, modulus: &BigInt) -> BigInt {
     result
 }
 
+trait IntegerValOps<RHS, Output>: Sized
+    + Add<RHS, Output = Output> + Sub<RHS, Output = Output>
+    + Mul<RHS, Output = Output> + Div<RHS, Output = Output>
+    + Rem<RHS, Output = Output> + Neg<Output = Output> {
+}
+
+impl<RHS, Output, T> IntegerValOps<RHS, Output> for T
+    where T: Sized
+    + Add<RHS, Output = Output> + Sub<RHS, Output = Output>
+    + Mul<RHS, Output = Output> + Div<RHS, Output = Output>
+    + Rem<RHS, Output = Output> + Neg<Output = Output>
+{
+}
+
+trait IntegerOps<Base>: IntegerValOps<Base, Base>
+    + for<'a> IntegerValOps<&'a Base, Base> {
+}
+
+impl<Base, T> IntegerOps<Base> for T
+    where T: IntegerValOps<Base, Base>
+    + for<'a> IntegerValOps<&'a Base, Base>
+{
+}
+
 trait Integer:
     Sized + Eq + Ord + Clone
-    + Add<Output=Self> + Sub<Output=Self> + Mul<Output=Self> + Div<Output=Self> + Rem<Output=Self> + Neg<Output=Self>
+    + IntegerOps<Self>
     + From<u64> + Hash
 {
     fn zero() -> Self;
@@ -185,23 +161,7 @@ impl Integer for BigInt {
 /// Calculate x where g**x = h (mod p).
 /// x has to be smaller than 2**x_max_exp.
 fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
-    where
-      for<'a, 'b> &'a T: Add<&'b T, Output=T>,
-      for<'a> &'a T: Add<T, Output=T>,
-      for<'a> T: Add<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Sub<&'b T, Output=T>,
-      for<'a> &'a T: Sub<T, Output=T>,
-      for<'a> T: Sub<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Mul<&'b T, Output=T>,
-      for<'a> &'a T: Mul<T, Output=T>,
-      for<'a> T: Mul<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Div<&'b T, Output=T>,
-      for<'a> &'a T: Div<T, Output=T>,
-      for<'a> T: Div<&'a T, Output=T>,
-      for<'a, 'b> &'a T: Rem<&'b T, Output=T>,
-      for<'a> &'a T: Rem<T, Output=T>,
-      for<'a> T: Rem<&'a T, Output=T>,
-      for<'a> &'a T: Neg<Output=T>,
+    where for<'a> &'a T: IntegerOps<T>
 {
     let B: usize = 1 << (x_max_exp / 2);
     let b = T::from(B as u64);
