@@ -57,7 +57,7 @@ fn extended_gcd<T: Integer>(a: T, b: T) -> GcdResult<T>
 fn inverse<T: Integer + Clone>(a: T, n: &T) -> Option<T>
     where for<'a> &'a T: IntegerOps<T>
 {
-    let GcdResult { gcd, c1: c, c2: _ } = extended_gcd(a, n.clone());
+    let GcdResult { gcd, c1: c, .. } = extended_gcd(a, n.clone());
     if gcd == T::one() {
         Some(normalize(c, n))
     } else {
@@ -158,8 +158,8 @@ impl Integer for BigInt {
     }
 }
 
-/// Calculate x where g**x = h (mod p).
-/// x has to be smaller than 2**x_max_exp.
+/// Calculate `x` where `g**x = h (mod p)`.
+/// `x` has to be smaller than `2**x_max_exp`.
 fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
     where for<'a> &'a T: IntegerOps<T>
 {
@@ -235,8 +235,7 @@ fn main() {
     const G: &'static str = "11717829880366207009516117596335367088558084999998952205599979459063929499736583746670572176471460312928594829675428279466566527115212748467589894601965568";
     const H: &'static str = "3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333";
 
-    let arg = std::env::args().skip(1).next()
-        .unwrap_or("bigint".into());
+    let arg = std::env::args().nth(1).unwrap_or("bigint".into());
 
     let x = if arg == "mpz" {
         let p = Mpz::from_str_radix(P, 10).unwrap();
