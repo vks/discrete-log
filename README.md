@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/vks/discrete-log.svg?branch=master)](https://travis-ci.org/vks/discrete-log)
 
-Discrete log implementation in Rust that can serve as a benchmark for bigints.
+[Discrete logarithm](https://en.wikipedia.org/wiki/Discrete_logarithm) implementation in Rust that can serve as a benchmark for bigints.
 
 ## Building
 
