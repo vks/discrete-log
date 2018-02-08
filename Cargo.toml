@@ -1,10 +1,13 @@
 [package]
-
+authors = ["Vinzent Steinberg <Vinzent.Steinberg@gmail.com>"]
 name = "discrete-log"
 version = "0.0.3"
-authors = ["Vinzent Steinberg <Vinzent.Steinberg@gmail.com>"]
 
 [dependencies]
-rust-gmp = "0.5"
 num-traits = "0.2"
-num-bigint = { version = "0.1", default-features = false }
+ramp = "0.3.11"
+rust-gmp = "0.5"
+
+[dependencies.num-bigint]
+default-features = false
+version = "0.1"

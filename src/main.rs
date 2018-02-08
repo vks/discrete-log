@@ -3,6 +3,7 @@
 extern crate num_traits;
 extern crate num_bigint;
 extern crate gmp;
+extern crate ramp;
 
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
 use std::cmp::Ordering;
@@ -12,6 +13,7 @@ use std::collections::HashMap;
 use gmp::mpz::Mpz;
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
+use ramp::Int;
 
 /// Find the standard representation of a (mod n).
 fn normalize<T: Integer>(a: T, n: &T) -> T
@@ -158,6 +160,24 @@ impl Integer for BigInt {
     }
 }
 
+impl Integer for Int {
+    fn zero() -> Int {
+        Zero::zero()
+    }
+
+    fn one() -> Int {
+        One::one()
+    }
+
+    fn invert(&self, modulus: &Int) -> Option<Int> {
+        inverse(self.clone(), modulus)
+    }
+
+    fn powm(&self, exp: &Int, modulus: &Int) -> Int {
+        self.pow_mod(exp, modulus)
+    }
+}
+
 /// Calculate `x` where `g**x = h (mod p)`.
 /// `x` has to be smaller than `2**x_max_exp`.
 fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
@@ -206,6 +226,12 @@ fn test_powm_mpz() {
 }
 
 #[test]
+fn test_powm_int() {
+    assert_eq!(Int::from(4).powm(&Int::from(13), &Int::from(497)),
+               Int::from(445));
+}
+
+#[test]
 fn test_discrete_log_mpz() {
     let g = Mpz::from(2);
     let p = Mpz::from(11);
@@ -227,6 +253,17 @@ fn test_discrete_log_bigint() {
     }
 }
 
+#[test]
+fn test_discrete_log_int() {
+    let g = Int::from(2);
+    let p = Int::from(11);
+    for h in 1..11 {
+        let h = Int::from(h);
+        let x = discrete_log(&g, &h, &p, 10);
+        assert_eq!(num_traits::pow(g.clone(), x) % &p, h);
+    }
+}
+
 #[cfg(not(test))]
 fn main() {
     use num_traits::Num;
@@ -237,20 +274,26 @@ fn main() {
 
     let arg = std::env::args().nth(1).unwrap_or("bigint".into());
 
-    let x = if arg == "mpz" {
-        let p = Mpz::from_str_radix(P, 10).unwrap();
-        let g = Mpz::from_str_radix(G, 10).unwrap();
-        let h = Mpz::from_str_radix(H, 10).unwrap();
-        discrete_log(&g, &h, &p, 40)
-
-    } else if arg == "bigint" {
-        let p = BigInt::from_str_radix(P, 10).unwrap();
-        let g = BigInt::from_str_radix(G, 10).unwrap();
-        let h = BigInt::from_str_radix(H, 10).unwrap();
-        discrete_log(&g, &h, &p, 40)
-
-    } else {
-        panic!("unknown argument!");
+    let x = match arg.as_ref() {
+        "mpz" => {
+            let p = Mpz::from_str_radix(P, 10).unwrap();
+            let g = Mpz::from_str_radix(G, 10).unwrap();
+            let h = Mpz::from_str_radix(H, 10).unwrap();
+            discrete_log(&g, &h, &p, 40)
+        },
+        "bigint" => {
+            let p = BigInt::from_str_radix(P, 10).unwrap();
+            let g = BigInt::from_str_radix(G, 10).unwrap();
+            let h = BigInt::from_str_radix(H, 10).unwrap();
+            discrete_log(&g, &h, &p, 40)
+        },
+        "int" => {
+            let p = Int::from_str_radix(P, 10).unwrap();
+            let g = Int::from_str_radix(G, 10).unwrap();
+            let h = Int::from_str_radix(H, 10).unwrap();
+            discrete_log(&g, &h, &p, 40)
+        },
+        _ => panic!("unknown argument!"),
     };
 
     assert_eq!(x, 375374217830);
