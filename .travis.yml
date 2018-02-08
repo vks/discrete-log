@@ -1,5 +1,7 @@
 language: rust
+rust:
+  - nightly
 addons:
-    apt:
-        packages:
-            - libgmp-dev
+  apt:
+    packages:
+      - libgmp-dev
