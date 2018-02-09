@@ -11,3 +11,8 @@ rust-gmp = "0.5"
 [dependencies.num-bigint]
 default-features = false
 version = "0.1"
+
+[dependencies.rug]
+default-features = false
+features = ["integer"]
+version = "0.9"
