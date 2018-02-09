@@ -17,7 +17,7 @@ implementation in [`num`](https://crates.io/crates/num) with
 ```
 ► cargo build --release
 [...]
-► perf stat -B cargo run --release bigint
+► perf stat -B cargo run --release num_bigint
      Running `target/release/discrete-log bigint`
 375374217830
 
@@ -36,7 +36,7 @@ implementation in [`num`](https://crates.io/crates/num) with
 
        5.255022572 seconds time elapsed
 
-► perf stat -B cargo run --release mpz
+► perf stat -B cargo run --release gmp
      Running `target/release/discrete-log mpz`
 375374217830
 
@@ -61,6 +61,8 @@ There is also a micro benchmark that compares the performance of modular
 multiplication. Use `cargo bench` to run it:
 
 ```
-test bigint_mulmod ... bench:       2,962 ns/iter (+/- 60)
-test mpz_mulmod    ... bench:         317 ns/iter (+/- 4)
+test bigint_mulmod ... bench:       2,001 ns/iter (+/- 157)
+test int_mulmod    ... bench:         409 ns/iter (+/- 16)
+test mpz_mulmod    ... bench:         272 ns/iter (+/- 16)
+test rugint_mulmod ... bench:         267 ns/iter (+/- 4)
 ```

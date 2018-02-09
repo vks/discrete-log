@@ -235,31 +235,31 @@ fn discrete_log<'a, T>(g: &T, h: &'a T, p: &'a T, x_max_exp: usize) -> usize
 
 
 #[test]
-fn test_powm_bigint() {
+fn test_powm_num_bigint() {
     assert_eq!(powm(&From::from(4), &From::from(13), &From::from(497)),
                From::from(445));
 }
 
 #[test]
-fn test_powm_mpz() {
+fn test_powm_gmp() {
     assert_eq!(Mpz::from(4).powm(&Mpz::from(13), &Mpz::from(497)),
                Mpz::from(445));
 }
 
 #[test]
-fn test_powm_int() {
+fn test_powm_ramp() {
     assert_eq!(Int::from(4).powm(&Int::from(13), &Int::from(497)),
                Int::from(445));
 }
 
 #[test]
-fn test_powm_rugint() {
+fn test_powm_rug() {
     assert_eq!(RugInt::from(4).powm(&RugInt::from(13), &RugInt::from(497)),
                445);
 }
 
 #[test]
-fn test_discrete_log_mpz() {
+fn test_discrete_log_gmp() {
     let g = Mpz::from(2);
     let p = Mpz::from(11);
     for h in 1..11 {
@@ -270,7 +270,7 @@ fn test_discrete_log_mpz() {
 }
 
 #[test]
-fn test_discrete_log_bigint() {
+fn test_discrete_log_num_bigint() {
     let g = BigInt::from(2);
     let p = BigInt::from(11);
     for h in 1..11 {
@@ -281,7 +281,7 @@ fn test_discrete_log_bigint() {
 }
 
 #[test]
-fn test_discrete_log_int() {
+fn test_discrete_log_ramp() {
     let g = Int::from(2);
     let p = Int::from(11);
     for h in 1..11 {
@@ -292,7 +292,7 @@ fn test_discrete_log_int() {
 }
 
 #[test]
-fn test_discrete_log_rugint() {
+fn test_discrete_log_rug() {
     use rug::ops::Pow;
     let g = RugInt::from(2);
     let p = RugInt::from(11);
@@ -314,25 +314,25 @@ fn main() {
     let arg = std::env::args().nth(1).unwrap_or("bigint".into());
 
     let x = match arg.as_ref() {
-        "mpz" => {
+        "gmp" => {
             let p = Mpz::from_str_radix(P, 10).unwrap();
             let g = Mpz::from_str_radix(G, 10).unwrap();
             let h = Mpz::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
-        "bigint" => {
+        "num_bigint" => {
             let p = BigInt::from_str_radix(P, 10).unwrap();
             let g = BigInt::from_str_radix(G, 10).unwrap();
             let h = BigInt::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
-        "int" => {
+        "ramp" => {
             let p = Int::from_str_radix(P, 10).unwrap();
             let g = Int::from_str_radix(G, 10).unwrap();
             let h = Int::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
-        "rugint" => {
+        "rug" => {
             let p = RugInt::from_str_radix(P, 10).unwrap();
             let g = RugInt::from_str_radix(G, 10).unwrap();
             let h = RugInt::from_str_radix(H, 10).unwrap();

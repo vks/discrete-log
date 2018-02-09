@@ -19,7 +19,7 @@ const G: &'static str = "1171782988036620700951611759633536708855808499999895220
 const H: &'static str = "3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333";
 
 #[bench]
-fn mpz_mulmod(b: &mut Bencher) {
+fn gmp_mulmod(b: &mut Bencher) {
     let p = Mpz::from_str_radix(P, 10).unwrap();
     let g = Mpz::from_str_radix(G, 10).unwrap();
     let h = Mpz::from_str_radix(H, 10).unwrap();
@@ -27,7 +27,7 @@ fn mpz_mulmod(b: &mut Bencher) {
 }
 
 #[bench]
-fn bigint_mulmod(b: &mut Bencher) {
+fn num_bigint_mulmod(b: &mut Bencher) {
     let p = BigInt::from_str_radix(P, 10).unwrap();
     let g = BigInt::from_str_radix(G, 10).unwrap();
     let h = BigInt::from_str_radix(H, 10).unwrap();
@@ -35,7 +35,7 @@ fn bigint_mulmod(b: &mut Bencher) {
 }
 
 #[bench]
-fn int_mulmod(b: &mut Bencher) {
+fn ramp_mulmod(b: &mut Bencher) {
     let p = Int::from_str_radix(P, 10).unwrap();
     let g = Int::from_str_radix(G, 10).unwrap();
     let h = Int::from_str_radix(H, 10).unwrap();
@@ -43,7 +43,7 @@ fn int_mulmod(b: &mut Bencher) {
 }
 
 #[bench]
-fn rugint_mulmod(b: &mut Bencher) {
+fn rug_mulmod(b: &mut Bencher) {
     let p = RugInt::from_str_radix(P, 10).unwrap();
     let g = RugInt::from_str_radix(G, 10).unwrap();
     let h = RugInt::from_str_radix(H, 10).unwrap();
