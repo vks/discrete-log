@@ -16,3 +16,10 @@ version = "0.1"
 default-features = false
 features = ["integer"]
 version = "0.9"
+
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "mulmod"
+harness = false
