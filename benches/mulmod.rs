@@ -3,12 +3,14 @@
 extern crate num_traits;
 extern crate num_bigint;
 extern crate gmp;
+extern crate ramp;
 extern crate rug;
 extern crate test;
 
 use gmp::mpz::Mpz;
 use num_traits::Num;
 use num_bigint::BigInt;
+use ramp::Int;
 use rug::Integer as RugInt;
 use test::Bencher;
 
@@ -29,6 +31,14 @@ fn bigint_mulmod(b: &mut Bencher) {
     let p = BigInt::from_str_radix(P, 10).unwrap();
     let g = BigInt::from_str_radix(G, 10).unwrap();
     let h = BigInt::from_str_radix(H, 10).unwrap();
+    b.iter(|| (&g * &h) % &p);
+}
+
+#[bench]
+fn int_mulmod(b: &mut Bencher) {
+    let p = Int::from_str_radix(P, 10).unwrap();
+    let g = Int::from_str_radix(G, 10).unwrap();
+    let h = Int::from_str_radix(H, 10).unwrap();
     b.iter(|| (&g * &h) % &p);
 }
 
