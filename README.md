@@ -18,10 +18,10 @@ implementation in [`num`](https://crates.io/crates/num) with
 ► cargo build --release
 [...]
 ► perf stat -B cargo run --release num_bigint
-     Running `target/release/discrete-log bigint`
+     Running `target/release/discrete-log num_bigint`
 375374217830
 
- Performance counter stats for 'cargo run --release bigint':
+ Performance counter stats for 'cargo run --release num_bigint':
 
        5088.166488      task-clock (msec)         #    0.968 CPUs utilized          
                609      context-switches          #    0.120 K/sec                  
@@ -37,10 +37,10 @@ implementation in [`num`](https://crates.io/crates/num) with
        5.255022572 seconds time elapsed
 
 ► perf stat -B cargo run --release gmp
-     Running `target/release/discrete-log mpz`
+     Running `target/release/discrete-log gmp`
 375374217830
 
- Performance counter stats for 'cargo run --release mpz':
+ Performance counter stats for 'cargo run --release gmp':
 
        1034.907032      task-clock (msec)         #    0.874 CPUs utilized          
                420      context-switches          #    0.406 K/sec                  
