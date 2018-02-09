@@ -4,6 +4,7 @@ extern crate num_traits;
 extern crate num_bigint;
 extern crate gmp;
 extern crate ramp;
+extern crate rug;
 
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
 use std::cmp::Ordering;
@@ -14,6 +15,7 @@ use gmp::mpz::Mpz;
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
 use ramp::Int;
+use rug::Integer as RugInt;
 
 /// Find the standard representation of a (mod n).
 fn normalize<T: Integer>(a: T, n: &T) -> T
@@ -178,10 +180,29 @@ impl Integer for Int {
     }
 }
 
+impl Integer for RugInt {
+    fn zero() -> RugInt {
+        RugInt::new()
+    }
+
+    fn one() -> RugInt {
+        RugInt::from(1)
+    }
+
+    fn invert(&self, modulus: &RugInt) -> Option<RugInt> {
+        Result::from(self.invert_ref(modulus)).ok()
+    }
+
+    fn powm(&self, exp: &RugInt, modulus: &RugInt) -> RugInt {
+        Result::from(self.pow_mod_ref(exp, modulus)).unwrap()
+    }
+}
+
 /// Calculate `x` where `g**x = h (mod p)`.
 /// `x` has to be smaller than `2**x_max_exp`.
-fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
-    where for<'a> &'a T: IntegerOps<T>
+fn discrete_log<'a, T>(g: &T, h: &'a T, p: &'a T, x_max_exp: usize) -> usize
+    where &'a T: Rem,
+    T: Integer + From<<&'a T as Rem>::Output>,
 {
     let B: usize = 1 << (x_max_exp / 2);
     let b = T::from(B as u64);
@@ -189,7 +210,7 @@ fn discrete_log<T: Integer>(g: &T, h: &T, p: &T, x_max_exp: usize) -> usize
     // Build table.
     let mut table: HashMap<T, usize> = HashMap::with_capacity(B);
     let g_inv = g.invert(p).unwrap();
-    let mut lhs = h % p;
+    let mut lhs = T::from(h % p);
     for x1 in 0..B {
         if x1 > 0 {
             lhs = (lhs * &g_inv) % p;
@@ -232,6 +253,12 @@ fn test_powm_int() {
 }
 
 #[test]
+fn test_powm_rugint() {
+    assert_eq!(RugInt::from(4).powm(&RugInt::from(13), &RugInt::from(497)),
+               445);
+}
+
+#[test]
 fn test_discrete_log_mpz() {
     let g = Mpz::from(2);
     let p = Mpz::from(11);
@@ -264,6 +291,18 @@ fn test_discrete_log_int() {
     }
 }
 
+#[test]
+fn test_discrete_log_rugint() {
+    use rug::ops::Pow;
+    let g = RugInt::from(2);
+    let p = RugInt::from(11);
+    for h in 1..11 {
+        let h = RugInt::from(h);
+        let x = discrete_log(&g, &h, &p, 10);
+        assert_eq!(RugInt::from((&g).pow(x as u32)) % &p, h);
+    }
+}
+
 #[cfg(not(test))]
 fn main() {
     use num_traits::Num;
@@ -291,6 +330,12 @@ fn main() {
             let p = Int::from_str_radix(P, 10).unwrap();
             let g = Int::from_str_radix(G, 10).unwrap();
             let h = Int::from_str_radix(H, 10).unwrap();
+            discrete_log(&g, &h, &p, 40)
+        },
+        "rugint" => {
+            let p = RugInt::from_str_radix(P, 10).unwrap();
+            let g = RugInt::from_str_radix(G, 10).unwrap();
+            let h = RugInt::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
         _ => panic!("unknown argument!"),
