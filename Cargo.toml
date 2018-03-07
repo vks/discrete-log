@@ -15,7 +15,7 @@ version = "0.1"
 [dependencies.rug]
 default-features = false
 features = ["integer"]
-version = "0.9"
+version = "1"
 
 [dev-dependencies]
 criterion = "0.2"

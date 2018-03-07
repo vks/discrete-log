@@ -190,11 +190,11 @@ impl Integer for RugInt {
     }
 
     fn invert(&self, modulus: &RugInt) -> Option<RugInt> {
-        Result::from(self.invert_ref(modulus)).ok()
+        self.invert_ref(modulus).map(RugInt::from)
     }
 
     fn powm(&self, exp: &RugInt, modulus: &RugInt) -> RugInt {
-        Result::from(self.pow_mod_ref(exp, modulus)).unwrap()
+        self.pow_mod_ref(exp, modulus).map(RugInt::from).unwrap()
     }
 }
 
