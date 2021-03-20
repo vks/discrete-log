@@ -5,6 +5,7 @@ use num_bigint::BigInt;
 use ramp::Int;
 #[cfg(feature = "rug")]
 use rug::Integer as RugInt;
+use ibig::IBig;
 use criterion::{Criterion, criterion_group, criterion_main};
 
 const P: &str = "13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084171";
@@ -49,6 +50,15 @@ fn mulmod(c: &mut Criterion) {
             let g = RugInt::from_str_radix(G, 10).unwrap();
             let h = RugInt::from_str_radix(H, 10).unwrap();
             b.iter(|| RugInt::from(&g * &h) % &p);
+        },
+    );
+    group.bench_function(
+        "ibig",
+        |b| {
+            let p = IBig::from_str_radix(P, 10).unwrap();
+            let g = IBig::from_str_radix(G, 10).unwrap();
+            let h = IBig::from_str_radix(H, 10).unwrap();
+            b.iter(|| (&g * &h) % &p);
         },
     );
     group.finish();

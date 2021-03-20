@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
+use std::ops::{Add, Sub, Mul, Div, Rem, Neg, Shr};
 use std::cmp::Ordering;
 use std::hash::Hash;
 use std::convert::From;
@@ -12,6 +12,7 @@ use num_traits::{Zero, One};
 use ramp::Int;
 #[cfg(feature = "rug")]
 use rug::Integer as RugInt;
+use ibig::{IBig, ibig};
 
 /// Find the standard representation of a (mod n).
 fn normalize<T: Integer>(a: T, n: &T) -> T
@@ -66,9 +67,13 @@ fn inverse<T: Integer + Clone>(a: T, n: &T) -> Option<T>
 }
 
 /// Calculate base^exp (mod modulus).
-fn powm(base: &BigInt, exp: &BigInt, modulus: &BigInt) -> BigInt {
-    let zero = Integer::zero();
-    let one: BigInt = Integer::one();
+fn powm<T>(base: &T, exp: &T, modulus: &T) -> T
+where
+    T: Integer + Clone + Neg<Output = T> + Shr<i32, Output = T>,
+    for<'a> &'a T: IntegerOps<T>
+{
+    let zero = T::zero();
+    let one = T::one();
     let two = &one + &one;
     let mut exp = exp.clone();
     let mut result = one.clone();
@@ -196,6 +201,24 @@ impl Integer for RugInt {
     }
 }
 
+impl Integer for IBig {
+    fn zero() -> Self {
+        ibig!(0)
+    }
+
+    fn one() -> Self {
+        ibig!(1)
+    }
+
+    fn invert(&self, modulus: &Self) -> Option<Self> {
+        inverse(self.clone(), modulus)
+    }
+
+    fn powm(&self, exp: &Self, modulus: &Self) -> Self {
+        powm(self, exp, modulus)
+    }
+}
+
 /// Calculate `x` where `g**x = h (mod p)`.
 /// `x` has to be smaller than `2**x_max_exp`.
 fn discrete_log<'a, T>(g: &T, h: &'a T, p: &'a T, x_max_exp: usize) -> usize
@@ -234,8 +257,8 @@ fn discrete_log<'a, T>(g: &T, h: &'a T, p: &'a T, x_max_exp: usize) -> usize
 
 #[test]
 fn test_powm_num_bigint() {
-    assert_eq!(powm(&From::from(4), &From::from(13), &From::from(497)),
-               From::from(445));
+    assert_eq!(powm(&BigInt::from(4), &BigInt::from(13), &BigInt::from(497)),
+               BigInt::from(445));
 }
 
 #[cfg(feature = "gmp")]
@@ -256,6 +279,11 @@ fn test_powm_ramp() {
 fn test_powm_rug() {
     assert_eq!(RugInt::from(4).powm(&RugInt::from(13), &RugInt::from(497)),
                445);
+}
+
+#[test]
+fn test_powm_ibig() {
+    assert_eq!(ibig!(4).powm(&ibig!(13), &ibig!(497)), ibig!(445));
 }
 
 #[cfg(feature = "gmp")]
@@ -305,6 +333,17 @@ fn test_discrete_log_rug() {
     }
 }
 
+#[test]
+fn test_discrete_log_ibig() {
+    let g = ibig!(2);
+    let p = ibig!(11);
+    for h in 1..11 {
+        let h = IBig::from(h);
+        let x = discrete_log(&g, &h, &p, 10);
+        assert_eq!((&g).pow(x) % &p, h);
+    }
+}
+
 #[cfg(not(test))]
 fn main() {
     use num_traits::Num;
@@ -340,6 +379,12 @@ fn main() {
             let p = RugInt::from_str_radix(P, 10).unwrap();
             let g = RugInt::from_str_radix(G, 10).unwrap();
             let h = RugInt::from_str_radix(H, 10).unwrap();
+            discrete_log(&g, &h, &p, 40)
+        },
+        "ibig" => {
+            let p = IBig::from_str_radix(P, 10).unwrap();
+            let g = IBig::from_str_radix(G, 10).unwrap();
+            let h = IBig::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
         _ => panic!("unknown argument!"),

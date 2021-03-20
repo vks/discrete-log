@@ -23,6 +23,9 @@ features = ["integer"]
 version = "1"
 optional = true
 
+[dependencies.ibig]
+version = "0.2"
+
 [features]
 gmp = ["rust-gmp"]
 # rug = ["dep:rug"]
