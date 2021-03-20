@@ -1,20 +1,16 @@
 #![allow(non_snake_case)]
 
-extern crate num_traits;
-extern crate num_bigint;
-extern crate gmp;
-extern crate ramp;
-extern crate rug;
-
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
 use std::cmp::Ordering;
 use std::hash::Hash;
 use std::convert::From;
 use std::collections::HashMap;
+#[cfg(feature = "gmp")]
 use gmp::mpz::Mpz;
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
 use ramp::Int;
+#[cfg(feature = "rug")]
 use rug::Integer as RugInt;
 
 /// Find the standard representation of a (mod n).
@@ -126,6 +122,7 @@ trait Integer:
     fn powm(&self, exp: &Self, modulus: &Self) -> Self;
 }
 
+#[cfg(feature = "gmp")]
 impl Integer for Mpz {
     fn zero() -> Mpz {
         Mpz::zero()
@@ -180,6 +177,7 @@ impl Integer for Int {
     }
 }
 
+#[cfg(feature = "rug")]
 impl Integer for RugInt {
     fn zero() -> RugInt {
         RugInt::new()
@@ -240,6 +238,7 @@ fn test_powm_num_bigint() {
                From::from(445));
 }
 
+#[cfg(feature = "gmp")]
 #[test]
 fn test_powm_gmp() {
     assert_eq!(Mpz::from(4).powm(&Mpz::from(13), &Mpz::from(497)),
@@ -252,12 +251,14 @@ fn test_powm_ramp() {
                Int::from(445));
 }
 
+#[cfg(feature = "rug")]
 #[test]
 fn test_powm_rug() {
     assert_eq!(RugInt::from(4).powm(&RugInt::from(13), &RugInt::from(497)),
                445);
 }
 
+#[cfg(feature = "gmp")]
 #[test]
 fn test_discrete_log_gmp() {
     let g = Mpz::from(2);
@@ -291,6 +292,7 @@ fn test_discrete_log_ramp() {
     }
 }
 
+#[cfg(feature = "rug")]
 #[test]
 fn test_discrete_log_rug() {
     use rug::ops::Pow;
@@ -314,6 +316,7 @@ fn main() {
     let arg = std::env::args().nth(1).unwrap_or("bigint".into());
 
     let x = match arg.as_ref() {
+        #[cfg(feature = "gmp")]
         "gmp" => {
             let p = Mpz::from_str_radix(P, 10).unwrap();
             let g = Mpz::from_str_radix(G, 10).unwrap();
@@ -332,6 +335,7 @@ fn main() {
             let h = Int::from_str_radix(H, 10).unwrap();
             discrete_log(&g, &h, &p, 40)
         },
+        #[cfg(feature = "rug")]
         "rug" => {
             let p = RugInt::from_str_radix(P, 10).unwrap();
             let g = RugInt::from_str_radix(G, 10).unwrap();

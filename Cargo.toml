@@ -2,21 +2,30 @@
 authors = ["Vinzent Steinberg <Vinzent.Steinberg@gmail.com>"]
 name = "discrete-log"
 version = "0.0.3"
+edition = "2018"
 
 [dependencies]
 num-traits = "0.2"
-rust-gmp = "0.5"
+
+[dependencies.rust-gmp]
+version = "0.5"
+optional = true
 
 [dependencies.ramp]
 version = "0.5.2"
 
 [dependencies.num-bigint]
-version = "0.2"
+version = "0.4"
 
 [dependencies.rug]
 default-features = false
 features = ["integer"]
 version = "1"
+optional = true
+
+[features]
+gmp = ["rust-gmp"]
+# rug = ["dep:rug"]
 
 [dev-dependencies]
 criterion = "0.3"

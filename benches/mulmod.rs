@@ -1,15 +1,12 @@
-extern crate num_traits;
-extern crate num_bigint;
-extern crate gmp;
-extern crate ramp;
-extern crate rug;
 #[macro_use]
 extern crate criterion;
 
+#[cfg(feature = "gmp")]
 use gmp::mpz::Mpz;
 use num_traits::Num;
 use num_bigint::BigInt;
 use ramp::Int;
+#[cfg(feature = "rug")]
 use rug::Integer as RugInt;
 use criterion::{Criterion, Fun};
 
@@ -18,6 +15,7 @@ const G: &'static str = "1171782988036620700951611759633536708855808499999895220
 const H: &'static str = "3239475104050450443565264378728065788649097520952449527834792452971981976143292558073856937958553180532878928001494706097394108577585732452307673444020333";
 
 fn mulmod(c: &mut Criterion) {
+    #[cfg(feature = "gmp")]
     let mulmod_gmp = {
         let p = Mpz::from_str_radix(P, 10).unwrap();
         let g = Mpz::from_str_radix(G, 10).unwrap();
@@ -36,6 +34,7 @@ fn mulmod(c: &mut Criterion) {
         let h = Int::from_str_radix(H, 10).unwrap();
         Fun::new("ramp", move |b, _| b.iter(|| (&g * &h) % &p))
     };
+    #[cfg(feature = "rug")]
     let mulmod_rug = {
         let p = RugInt::from_str_radix(P, 10).unwrap();
         let g = RugInt::from_str_radix(G, 10).unwrap();
@@ -43,7 +42,12 @@ fn mulmod(c: &mut Criterion) {
         Fun::new("rug", move |b, _| b.iter(|| RugInt::from(&g * &h) % &p))
     };
     c.bench_functions("mulmod",
-        vec![mulmod_gmp, mulmod_num_bigint, mulmod_ramp, mulmod_rug],
+        vec![
+            #[cfg(feature = "gmp")] mulmod_gmp,
+            mulmod_num_bigint,
+            mulmod_ramp,
+            #[cfg(feature = "rug")] mulmod_rug,
+        ],
         ());
 }
 
