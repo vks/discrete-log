@@ -2,11 +2,15 @@
 
 [![Build Status](https://travis-ci.org/vks/discrete-log.svg?branch=master)](https://travis-ci.org/vks/discrete-log)
 
-[Discrete logarithm](https://en.wikipedia.org/wiki/Discrete_logarithm) implementation in Rust that can serve as a benchmark for bigints.
+[Discrete logarithm](https://en.wikipedia.org/wiki/Discrete_logarithm)
+implementation in Rust that can serve as a benchmark for bigints.
 
 ## Building
 
-Make sure GMP is installed. Then `cargo build` should work.
+By default, any bignum crates using GMP are disabled.
+You can enable the "gmp" feature if GMP is installed.
+You can enable the "rug" feature if you are not using Windows.
+(The `rug` crate builds its own version of GMP and MPFR.)
 
 ## Example
 
