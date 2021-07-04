@@ -3,7 +3,7 @@
 use std::ops::{Add, Sub, Mul, Div, Rem, Neg, Shr};
 use std::cmp::Ordering;
 use std::hash::Hash;
-use std::convert::From;
+use std::convert::{From, TryFrom, TryInto};
 use std::collections::HashMap;
 #[cfg(feature = "gmp")]
 use gmp::mpz::Mpz;
@@ -215,7 +215,19 @@ impl Integer for IBig {
     }
 
     fn powm(&self, exp: &Self, modulus: &Self) -> Self {
-        powm(self, exp, modulus)
+        let ring = ibig::modular::ModuloRing::new(&modulus.try_into()
+            .expect("modulus must be positive"));
+
+        // Because we deal with the negative sign, the unwraps below should never fail.
+        if exp >= &ibig!(0) {
+            let base = ring.from(self);
+            let exp = ibig::UBig::try_from(exp).unwrap();
+            return base.pow(&exp).residue().into();
+        } else {
+            let base = ring.from(inverse(self.clone(), modulus).unwrap());
+            let exp = ibig::UBig::try_from(-exp).unwrap();
+            return base.pow(&exp).residue().into();
+        }
     }
 }
 
