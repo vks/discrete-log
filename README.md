@@ -5,8 +5,8 @@
 [Discrete logarithm] implementation in Rust that can serve as a benchmark for
 bigints.
 
-[Build Status]: https://github.com/vks/average/workflows/Tests/badge.svg?event=push
-[actions]: https://github.com/vks/average/actions 
+[Build Status]: https://github.com/vks/discrete-log/workflows/Tests/badge.svg?event=push
+[actions]: https://github.com/vks/discrete-log/actions 
 [Discrete logarithm]: https://en.wikipedia.org/wiki/Discrete_logarithm
 
 ## Building
