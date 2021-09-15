@@ -27,5 +27,5 @@ jobs:
         run: ${{ matrix.deps }}
       - name: Test
         run: |
-          cargo test --target ${{ matrix.target }}
+          cargo test --all-features --target ${{ matrix.target }}
 

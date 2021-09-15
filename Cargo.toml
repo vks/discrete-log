@@ -28,7 +28,7 @@ version = "0.3"
 
 [features]
 gmp = ["rust-gmp"]
-# rug = ["dep:rug"]
+rug = ["dep:rug"]
 
 [dev-dependencies.criterion]
 version = "0.3"
