@@ -1,9 +1,13 @@
 # discrete-log
 
-[![Build Status](https://travis-ci.org/vks/discrete-log.svg?branch=master)](https://travis-ci.org/vks/discrete-log)
+[![Build Status]][actions]
 
-[Discrete logarithm](https://en.wikipedia.org/wiki/Discrete_logarithm)
-implementation in Rust that can serve as a benchmark for bigints.
+[Discrete logarithm] implementation in Rust that can serve as a benchmark for
+bigints.
+
+[Build Status]: https://github.com/vks/average/workflows/Tests/badge.svg?event=push
+[actions]: https://github.com/vks/average/actions 
+[Discrete logarithm]: https://en.wikipedia.org/wiki/Discrete_logarithm
 
 ## Building
 
