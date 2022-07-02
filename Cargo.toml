@@ -12,7 +12,7 @@ version = "0.5"
 optional = true
 
 [dependencies.ramp]
-version = "0.6.0"
+version = "0.7"
 
 [dependencies.num-bigint]
 version = "0.4"
